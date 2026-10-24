@@ -1,0 +1,56 @@
+{
+  "title": "IT Basics",
+  "time": 30,
+  "questions": [
+    {
+      "question": "How many bits are in 1 byte?",
+      "options": ["4", "8", "16", "32"],
+      "correct": 1
+    },
+    {
+      "question": "What does RAM stand for?",
+      "options": ["Random Access Memory", "Rapid Application Module", "Read And Modify", "Remote Access Manager"],
+      "correct": 0
+    },
+    {
+      "question": "What type of attack tricks users into giving their password?",
+      "options": ["DDoS", "SQL Injection", "Phishing", "Brute Force"],
+      "correct": 2
+    },
+    {
+      "question": "Which language is used for web styling?",
+      "options": ["HTML", "Python", "CSS", "SQL"],
+      "correct": 2
+    },
+    {
+      "question": "What does HTML stand for?",
+      "options": ["High Tech Modern Language", "HyperText Markup Language", "Home Tool Markup Language", "Hyperlink Text Management Layer"],
+      "correct": 1
+    },
+    {
+      "question": "What is the output of: print('IT' * 3)",
+      "options": ["ITITIT", "IT IT IT", "9", "Error"],
+      "correct": 0
+    },
+    {
+      "question": "What is the output of: print(10 // 3)",
+      "options": ["3.33", "3", "4", "1"],
+      "correct": 1
+    },
+    {
+      "question": "What does URL stand for?",
+      "options": ["Universal Reference Link", "Uniform Resource Locator", "User Registered Login", "Unified Routing Layer"],
+      "correct": 1
+    },
+    {
+      "question": "What comes next: 2, 4, 8, 16, ___?",
+      "options": ["20", "24", "32", "64"],
+      "correct": 2
+    },
+    {
+      "question": "If x = 5 and y = x * 2 - 3, what is y?",
+      "options": ["7", "13", "10", "4"],
+      "correct": 0
+    }
+  ]
+}

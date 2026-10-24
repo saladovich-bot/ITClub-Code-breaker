@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT CodeBreaker - Host</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #0a0f1e; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; color: #eeedfe; }
+        .screen { display: none; min-height: 100vh; padding: 40px; }
+        .screen.active { display: flex; flex-direction: column; }
+        .center { align-items: center; justify-content: center; text-align: center; gap: 24px; }
+
+        /* ── BRAND / BUTTONS ── */
+        .brand { display: flex; align-items: center; gap: 16px; }
+        .brand-logo { width: 60px; }
+        .brand-logo img { width: 100%; }
+        .brand-title p { font-size: 11px; color: #7f77dd; letter-spacing: 3px; text-transform: uppercase; }
+        .brand-title h1 { font-size: 28px; color: #eeedfe; font-weight: 500; letter-spacing: -1px; }
+        .brand-title h1 span { color: #7f77dd; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+        .topbar-btns { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+        .btn { border: none; color: #eeedfe; border-radius: 12px; padding: 14px 36px; font-size: 16px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: all 0.2s; font-family: inherit; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+        .btn-sm { padding: 10px 18px; font-size: 13px; border-radius: 10px; }
+        .btn-purple { background: #534ab7; }
+        .btn-purple:hover:not(:disabled) { background: #7f77dd; transform: scale(1.02); }
+        .btn-green { background: #2d6a3f; }
+        .btn-green:hover { background: #3d8f54; }
+        .btn-red { background: #6a2d2d; }
+        .btn-red:hover { background: #8f3d3d; }
+        .btn-gold { background: #7a6a00; }
+        .btn-gold:hover { background: #a89200; }
+        .btn-ghost { background: transparent; border: 0.5px solid #534ab7; color: #7f77dd; }
+        .btn-ghost:hover { background: #13183a; }
+        .sound-hint { font-size: 12px; color: #534ab7; }
+        .sound-warning { background: #2b1f00; border: 0.5px solid #a89200; color: #f5c842; border-radius: 10px; padding: 10px 16px; font-size: 13px; margin: -12px 0 20px; }
+
+        /* ── LOBBY ── */
+        .lobby-top { display: flex; gap: 24px; align-items: flex-start; }
+        .lobby-left { display: flex; flex-direction: column; gap: 20px; flex: 1; min-width: 0; }
+        .lobby-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+        .stat-card { background: #13183a; border: 0.5px solid #534ab7; border-radius: 14px; padding: 20px 28px; }
+        .stat-card p, .section-label { font-size: 11px; color: #534ab7; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+        .stat-card h2 { font-size: 36px; color: #eeedfe; }
+        .quiz-card { flex: 1; min-width: 260px; }
+        .quiz-card select { width: 100%; background: #0a0f1e; color: #eeedfe; border: 0.5px solid #534ab7; border-radius: 8px; padding: 10px 12px; font-size: 15px; font-family: inherit; outline: none; margin-top: 4px; }
+        .quiz-errors { font-size: 12px; color: #ff8a89; margin-top: 8px; line-height: 1.5; }
+        .section-label { letter-spacing: 3px; margin-bottom: 16px; }
+
+        .join-box { background: #13183a; border: 0.5px solid #534ab7; border-radius: 14px; padding: 28px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; min-width: 300px; }
+        .join-label { font-size: 11px; color: #534ab7; letter-spacing: 3px; text-transform: uppercase; }
+        .join-url { font-size: 18px; color: #7f77dd; font-weight: 500; word-break: break-all; }
+        .pin { font-size: 60px; font-weight: 700; letter-spacing: 6px; color: #eeedfe; line-height: 1; }
+        .join-box img { width: 220px; height: 220px; border-radius: 12px; background: white; padding: 10px; }
+
+        .players-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+        .player-card { position: relative; background: #13183a; border: 0.5px solid #534ab7; border-radius: 12px; padding: 16px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; transition: opacity 0.3s; }
+        .player-card.pop { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .player-card.offline { opacity: 0.45; }
+        .p-avatar { width: 48px; height: 48px; border-radius: 50%; background: #1e1e4a; border: 1.5px solid #534ab7; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        .p-name { font-size: 14px; color: #eeedfe; font-weight: 500; word-break: break-word; }
+        .p-status { font-size: 11px; color: #7f77dd; background: #1e1e4a; border-radius: 20px; padding: 3px 12px; }
+        .kick { position: absolute; top: 6px; right: 8px; background: none; border: none; color: #534ab7; font-size: 15px; cursor: pointer; padding: 4px; }
+        .kick:hover { color: #e24b4a; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+        .empty-msg { grid-column: 1/-1; text-align: center; padding: 60px; color: #2a2a5a; font-size: 14px; }
+
+        /* ── COUNTDOWN ── */
+        .cd-logo { width: 180px; animation: slideDown 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .cd-logo img { width: 100%; }
+        @keyframes slideDown { from { transform: translateY(-60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .cd-number { font-size: 180px; font-weight: 700; color: #7f77dd; line-height: 1; }
+        @keyframes zoomIn { from { transform: scale(1.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .cd-text { font-size: 18px; color: #534ab7; letter-spacing: 4px; text-transform: uppercase; }
+
+        /* ── QUESTION ── */
+        .q-meta { display: flex; align-items: center; gap: 14px; }
+        .host-timer, .ans-badge { background: #13183a; border: 0.5px solid #534ab7; border-radius: 10px; padding: 10px 20px; font-size: 14px; color: #534ab7; transition: all 0.3s; }
+        .host-timer span { color: #eeedfe; font-weight: 700; font-size: 24px; }
+        .host-timer.urgent { border-color: #e24b4a; background: #2b0d0d; }
+        .host-timer.urgent span { color: #e24b4a; }
+        .ans-badge span { color: #7f77dd; font-weight: 700; font-size: 20px; }
+        .q-badge { font-size: 12px; color: #7f77dd; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; }
+        .q-progress-bar { width: 100%; height: 8px; background: #13183a; border-radius: 4px; overflow: hidden; margin-bottom: 32px; }
+        .q-progress-fill { height: 100%; background: linear-gradient(90deg, #534ab7, #7f77dd); border-radius: 4px; transition: width 0.5s ease; }
+        .q-main-text { font-size: 40px; color: #eeedfe; line-height: 1.3; margin-bottom: 24px; }
+        .q-main-text.enter { animation: fadeInUp 0.5s ease; }
+        .q-main-text.big { font-size: 52px; text-align: center; margin: auto 0 32px; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .q-image { max-height: 32vh; max-width: 100%; align-self: center; border-radius: 14px; margin-bottom: 24px; object-fit: contain; }
+
+        .read-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-bottom: auto; }
+        .read-label { font-size: 13px; color: #534ab7; letter-spacing: 3px; text-transform: uppercase; }
+        .read-bar { width: min(600px, 100%); height: 10px; background: #13183a; border-radius: 5px; overflow: hidden; }
+        .read-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #534ab7, #7f77dd); transition: width 0.2s linear; }
+
+        .dist { display: flex; justify-content: center; align-items: flex-end; gap: 28px; height: 200px; margin: auto 0 24px; }
+        .dist-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 8px; width: 110px; height: 100%; transition: opacity 0.4s; }
+        .dist-col.wrong { opacity: 0.4; }
+        .dist-count { font-size: 24px; font-weight: 700; }
+        .dist-bar { width: 100%; height: 6px; border-radius: 8px 8px 0 0; transition: height 0.9s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .dist-shape { font-size: 22px; display: flex; gap: 6px; align-items: center; }
+
+        .host-options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: auto; }
+        .host-option { display: flex; align-items: center; gap: 14px; border-radius: 14px; padding: 24px; font-size: 22px; font-weight: 600; color: #eeedfe; transition: outline 0.3s, opacity 0.3s; min-height: 110px; font-size: 26px; }
+        .host-option .shape { font-size: 32px; }
+        .host-option .check { margin-left: auto; font-size: 28px; }
+        .hopt-0 { background: #e24b4a; }
+        .hopt-1 { background: #3d7fe2; }
+        .hopt-2 { background: #d9a72e; }
+        .hopt-3 { background: #4caf7d; }
+        .host-option.correct-mark { outline: 4px solid #ffffff; }
+        .host-option.dim { opacity: 0.35; }
+        .q-actions { display: flex; gap: 14px; margin-top: 28px; justify-content: flex-end; }
+
+        /* ── LEADERBOARD ── */
+        .lb-head { display: flex; align-items: center; gap: 20px; margin-bottom: 8px; }
+        .lb-logo { width: 70px; }
+        .lb-logo img { width: 100%; }
+        .lb-title { font-size: 40px; font-weight: 500; }
+        .lb-sub { font-size: 13px; color: #534ab7; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px; }
+        .lb-list { position: relative; width: 100%; max-width: 760px; }
+        .lb-row { position: absolute; left: 0; right: 0; height: 66px; display: flex; align-items: center; gap: 20px; padding: 0 28px; background: #13183a; border: 0.5px solid #534ab7; border-radius: 14px; transition: top 0.9s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.6s; }
+        .lb-row.top1 { border-color: #f5c842; background: #1e1a00; }
+        .lb-row.top2 { border-color: #aaaaaa; }
+        .lb-row.top3 { border-color: #cd7f32; }
+        .lb-medal { font-size: 28px; width: 44px; text-align: center; }
+        .lb-name { font-size: 22px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+        .lb-move { font-size: 14px; color: #4caf7d; font-weight: 600; }
+        .lb-pts { font-size: 26px; color: #7f77dd; font-weight: 700; }
+
+        /* ── FINAL ── */
+        .final-logo { width: 160px; animation: glowPulse 2s ease-in-out infinite; }
+        .final-logo img { width: 100%; }
+        .final-title { font-size: 48px; font-weight: 500; }
+
+        /* ── PODIUM (unchanged look) ── */
+        #podium-screen { position: fixed; inset: 0; background: #0a0f1e; z-index: 300; align-items: center; justify-content: center; gap: 32px; overflow: hidden; }
+        .podium-intro { display: flex; flex-direction: column; align-items: center; gap: 20px; animation: fadeInUp 0.8s ease forwards; }
+        .podium-intro-logo { width: 160px; animation: glowPulse 2s ease-in-out infinite; }
+        .podium-intro-logo img { width: 100%; }
+        @keyframes glowPulse { 0%, 100% { filter: drop-shadow(0 0 10px #534ab7); transform: scale(1); } 50% { filter: drop-shadow(0 0 30px #7f77dd); transform: scale(1.05); } }
+        .podium-intro h2 { font-size: 36px; color: #eeedfe; font-weight: 500; text-align: center; }
+        .podium-intro p { font-size: 16px; color: #534ab7; letter-spacing: 2px; text-transform: uppercase; }
+        .podium-reveal-list { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 700px; }
+        .podium-reveal-item { display: flex; align-items: center; gap: 24px; padding: 24px 32px; border-radius: 16px; opacity: 0; transform: translateX(-60px); transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .podium-reveal-item.show { opacity: 1; transform: translateX(0); }
+        .podium-reveal-item.rank-1 { background: #1e1a00; border: 1.5px solid #f5c842; }
+        .podium-reveal-item.rank-2 { background: #1a1a1a; border: 1.5px solid #aaaaaa; }
+        .podium-reveal-item.rank-3 { background: #1a1000; border: 1.5px solid #cd7f32; }
+        .podium-reveal-item.rank-4, .podium-reveal-item.rank-5 { background: #13183a; border: 1px solid #534ab7; }
+        .pr-medal { font-size: 36px; width: 48px; text-align: center; }
+        .pr-rank { font-size: 13px; color: #534ab7; letter-spacing: 2px; text-transform: uppercase; width: 60px; }
+        .pr-name { font-size: 26px; color: #eeedfe; font-weight: 600; flex: 1; }
+        .pr-score { font-size: 28px; color: #7f77dd; font-weight: 700; }
+        .podium-reveal-item.rank-1 .pr-name, .podium-reveal-item.rank-1 .pr-score { color: #f5c842; }
+        .podium-btns { display: flex; gap: 12px; }
+        .confetti-piece { position: fixed; top: -20px; animation: confettiFall linear forwards; z-index: 9999; border-radius: 2px; }
+        @keyframes confettiFall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+        #heartbeat-overlay { display: none; position: fixed; inset: 0; background: rgba(10,15,30,0.95); z-index: 400; flex-direction: column; align-items: center; justify-content: center; gap: 24px; }
+        #heartbeat-overlay.active { display: flex; }
+        .hb-icon { font-size: 120px; animation: heartPulse 0.6s ease-in-out infinite; }
+        @keyframes heartPulse { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px #e24b4a); } 50% { transform: scale(1.4); filter: drop-shadow(0 0 40px #e24b4a); } }
+        .hb-text { font-size: 32px; color: #eeedfe; letter-spacing: 4px; text-transform: uppercase; text-align: center; }
+        .hb-subtext { font-size: 16px; color: #534ab7; letter-spacing: 2px; }
+
+        #conn { position: fixed; top: 0; left: 0; right: 0; background: #7a6a00; color: #fff; text-align: center; font-size: 13px; padding: 6px; z-index: 500; transform: translateY(-100%); transition: transform 0.3s; }
+        #conn.show { transform: translateY(0); }
+
+        @media (max-width: 900px) {
+            .lobby-top { flex-direction: column-reverse; align-items: stretch; }
+            .screen { padding: 24px; }
+            .q-main-text { font-size: 28px; }
+            .host-options-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="conn">Reconnecting…</div>
+
+    <div id="heartbeat-overlay">
+        <div class="hb-icon">❤️</div>
+        <p class="hb-text" id="hb-text">Who's next?</p>
+        <p class="hb-subtext" id="hb-subtext"></p>
+    </div>
+
+    <!-- LOBBY -->
+    <div class="screen active" id="lobby-screen">
+        <div class="topbar">
+            <div class="brand">
+                <div class="brand-logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="logo"></div>
+                <div class="brand-title"><p>IT Club AAUP</p><h1>CODE<span>BREAKER</span></h1></div>
+            </div>
+            <div class="topbar-btns">
+                <span class="sound-hint" id="sound-hint">🔊 Click anywhere to turn on music</span>
+                <button class="btn btn-red btn-sm" onclick="newGame()">✕ New game</button>
+                <button class="btn btn-purple" id="start-btn" onclick="startGame()" disabled>START GAME</button>
+            </div>
+        </div>
+        <p class="sound-warning" id="sound-warning" style="display:none"></p>
+        <div class="lobby-top">
+            <div class="lobby-left">
+                <div class="lobby-stats">
+                    <div class="stat-card"><p>Players joined</p><h2 id="count">0</h2></div>
+                    <div class="stat-card quiz-card">
+                        <p>Quiz</p>
+                        <select id="quiz-select" onchange="selectQuiz(this.value)"></select>
+                        <div class="quiz-errors" id="quiz-errors"></div>
+                    </div>
+                </div>
+                <div>
+                    <p class="section-label">Players</p>
+                    <div class="players-grid" id="players-grid"><div class="empty-msg">Waiting for players to join...</div></div>
+                </div>
+            </div>
+            <div class="join-box">
+                <p class="join-label">Join at</p>
+                <p class="join-url" id="join-url"></p>
+                <p class="join-label" style="margin-top:6px">Game PIN</p>
+                <p class="pin" id="pin"></p>
+                <img id="qr-img" src="" alt="QR code">
+                <p class="join-label">or scan to join</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- COUNTDOWN -->
+    <div class="screen center" id="countdown-screen">
+        <div class="cd-logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="logo"></div>
+        <div class="cd-number" id="cd-number">3</div>
+        <p class="cd-text">Get ready!</p>
+    </div>
+
+    <!-- QUESTION (intro / answering / results) -->
+    <div class="screen" id="question-screen">
+        <div class="topbar">
+            <div class="brand">
+                <div class="brand-logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="logo"></div>
+                <div class="brand-title"><p>IT Club AAUP</p><h1>CODE<span>BREAKER</span></h1></div>
+            </div>
+            <div class="q-meta">
+                <button class="btn btn-ghost btn-sm" onclick="backToLobby()">⟲ Lobby</button>
+                <div class="host-timer" id="host-timer">⏱ <span id="host-time">--</span>s</div>
+                <div class="ans-badge" id="ans-badge">✅ <span id="ans-count">0</span> / <span id="ans-total">0</span></div>
+            </div>
+        </div>
+        <p class="q-badge" id="q-badge"></p>
+        <div class="q-progress-bar"><div class="q-progress-fill" id="q-progress" style="width:0%"></div></div>
+        <p class="q-main-text" id="host-q-text"></p>
+        <img class="q-image" id="q-image" alt="" style="display:none">
+        <div class="read-wrap" id="read-wrap">
+            <p class="read-label">Answers in…</p>
+            <div class="read-bar"><div class="read-fill" id="read-fill"></div></div>
+        </div>
+        <div class="dist" id="dist" style="display:none"></div>
+        <div class="host-options-grid" id="host-options-grid"></div>
+        <div class="q-actions">
+            <button class="btn btn-red" id="skip-btn" onclick="socket.emit('host_skip')">⏭ Skip</button>
+            <button class="btn btn-green" id="next-btn" onclick="socket.emit('host_next')">▶ Next</button>
+        </div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div class="screen center" id="leaderboard-screen">
+        <div class="lb-head">
+            <div class="lb-logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="logo"></div>
+            <h2 class="lb-title">🏆 Leaderboard</h2>
+        </div>
+        <p class="lb-sub" id="lb-sub"></p>
+        <div class="lb-list" id="lb-list"></div>
+        <div class="podium-btns">
+            <button class="btn btn-ghost btn-sm" onclick="backToLobby()">⟲ Lobby</button>
+            <button class="btn btn-green" onclick="socket.emit('host_next')">▶ Next Question</button>
+        </div>
+    </div>
+
+    <!-- GAME OVER -->
+    <div class="screen center" id="final-screen">
+        <div class="final-logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="logo"></div>
+        <h2 class="final-title">🎉 Game Over!</h2>
+        <p class="lb-sub">Ready to reveal the winners?</p>
+        <button class="btn btn-gold" onclick="socket.emit('host_next')">🏆 Show Podium</button>
+    </div>
+
+    <!-- PODIUM -->
+    <div class="screen" id="podium-screen">
+        <div class="podium-intro" id="podium-intro">
+            <div class="podium-intro-logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="logo"></div>
+            <h2>And the winners are...</h2>
+            <p>IT Club AAUP • CodeBreaker</p>
+        </div>
+        <div class="podium-reveal-list" id="podium-reveal-list" style="display:none;"></div>
+        <button class="btn btn-gold" id="podium-next-btn" onclick="revealNext()" style="display:none;">▶ Reveal Next</button>
+        <div class="podium-btns" id="podium-end-btns" style="display:none;">
+            <button class="btn btn-purple" onclick="socket.emit('back_to_lobby')">🔄 Play Again</button>
+            <button class="btn btn-red" onclick="newGame()">✕ New game</button>
+        </div>
+    </div>
+
+    <script>
+        const CFG = {{ cfg|tojson }};
+                const SHAPES = ['▲', '◆', '●', '■'];
+        const COLORS = ['#e24b4a', '#3d7fe2', '#d9a72e', '#4caf7d'];
+        const AVATARS = ['🧑‍💻','👩‍💻','🦾','🤖','👾','🧠','⚡','🔥'];
+        const TOP_N = 5;
+        const $ = id => document.getElementById(id);
+
+        const socket = io();
+        let view = null;
+        let lastKey = null;
+        let offset = 0;
+        let lastCd = null;
+        let lastTickSec = null;
+        let seenPlayers = new Set();
+        let prevPlayerCount = null;
+        let quizListKey = null;
+
+        socket.on('connect', () => {
+            $('conn').classList.remove('show');
+            socket.emit('host_hello', { pin: CFG.pin, token: CFG.token });
+        });
+        socket.on('disconnect', () => $('conn').classList.add('show'));
+        socket.on('host_invalid', () => { location.href = '/host?new=1'; });
+        socket.on('state', v => {
+            offset = v.server_now - Date.now() / 1000;
+            view = v;
+            render(v);
+        });
+
+        function left(v) { return v && v.ends_at ? Math.max(0, v.ends_at - (Date.now() / 1000 + offset)) : 0; }
+        function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id)); }
+        function el(tag, cls, text) {
+            const e = document.createElement(tag);
+            if (cls) e.className = cls;
+            if (text !== undefined) e.textContent = text;
+            return e;
+        }
+
+        if (CFG.missing_sounds.length) {
+            soundWarning('not found in static/: ' + CFG.missing_sounds.map(s => s + '.mp3').join(', '));
+        }
+
+        // ── JOIN INFO ─────────────────────────────────────────────
+        const joinUrl = CFG.join_base + '/?pin=' + CFG.pin;
+        $('join-url').textContent = CFG.join_base.replace(/^https?:\/\//, '');
+        $('pin').textContent = CFG.pin.slice(0, 3) + ' ' + CFG.pin.slice(3);
+        $('qr-img').src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(joinUrl) + '&bgcolor=13183a&color=7f77dd';
+
+        // ── AUDIO ─────────────────────────────────────────────────
+        let audioCtx = null;
+        let audioReady = false;
+        function getCtx() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            return audioCtx;
+        }
+        // Music files are found by the server (any folder inside static/, see find_sounds() in app.py)
+        // and played through Web Audio: after the first click the browser allows it to start at any
+        // moment (e.g. when a question opens), unlike <audio>, which autoplay rules can block.
+        const buffers = {};
+        async function loadSound(name) {
+            if (buffers[name] || !CFG.sounds[name]) return buffers[name];
+            try {
+                const r = await fetch(CFG.sounds[name]);
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                buffers[name] = await getCtx().decodeAudioData(await r.arrayBuffer());
+            } catch (e) {
+                soundWarning(name + ' could not be played (' + CFG.sounds[name] + '): ' + e.message);
+            }
+            return buffers[name];
+        }
+        function playSound(name, volume = 1.0, loop = false) {
+            if (!audioReady || !CFG.sounds[name]) return null;
+            const handle = { stopped: false, src: null };
+            loadSound(name).then(buf => {
+                if (!buf || handle.stopped) return;
+                const c = getCtx();
+                const src = c.createBufferSource();
+                src.buffer = buf;
+                src.loop = loop;
+                const gain = c.createGain();
+                gain.gain.value = Math.min(volume, 1.0);
+                src.connect(gain);
+                gain.connect(c.destination);
+                src.start();
+                handle.src = src;
+            });
+            return handle;
+        }
+        function soundWarning(msg) {
+            console.warn('[sound]', msg);
+            const w = $('sound-warning');
+            w.textContent = '⚠ Music: ' + msg;
+            w.style.display = '';
+        }
+        function tone(freq, type, start, dur, vol = 0.3) {
+            if (!audioReady) return;
+            const c = getCtx();
+            const o = c.createOscillator();
+            const g = c.createGain();
+            o.connect(g); g.connect(c.destination);
+            o.type = type;
+            o.frequency.setValueAtTime(freq, c.currentTime + start);
+            g.gain.setValueAtTime(vol, c.currentTime + start);
+            g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + start + dur);
+            o.start(c.currentTime + start);
+            o.stop(c.currentTime + start + dur);
+        }
+
+        let lobbyAudio = null, questionAudio = null, heartbeatAudio = null, suspenseAudio = null;
+        function stopAudio(h) { if (h) { h.stopped = true; try { if (h.src) h.src.stop(); } catch (e) {} } return null; }
+        function stopAll() {
+            lobbyAudio = stopAudio(lobbyAudio);
+            questionAudio = stopAudio(questionAudio);
+            heartbeatAudio = stopAudio(heartbeatAudio);
+            suspenseAudio = stopAudio(suspenseAudio);
+        }
+        function startLobbyMusic() { if (audioReady && !lobbyAudio) lobbyAudio = playSound('lobby', 0.55, true); }
+        function startQuestionMusic() { questionAudio = stopAudio(questionAudio); if (audioReady) questionAudio = playSound('question', 0.5, true); }
+        function playTimesUp() { tone(440,'square',0,0.12,0.45); tone(330,'square',0.13,0.12,0.45); tone(220,'square',0.26,0.28,0.5); }
+        function playTick() { tone(900,'square',0,0.06,0.4); }
+        function playQuestionStart() { tone(440,'sine',0,0.08,0.3); tone(554,'sine',0.09,0.08,0.3); tone(659,'sine',0.18,0.15,0.35); }
+        function playAllAnswered() { tone(523,'sine',0,0.1,0.4); tone(659,'sine',0.11,0.1,0.4); tone(784,'sine',0.22,0.12,0.45); tone(1047,'sine',0.35,0.3,0.5); }
+        function playPlayerJoined() { tone(880,'sine',0,0.07,0.2); tone(1100,'sine',0.08,0.1,0.2); }
+        function startHeartbeat() { heartbeatAudio = stopAudio(heartbeatAudio); if (audioReady) heartbeatAudio = playSound('heartbeat', 1.0, true); }
+        function stopHeartbeat() { heartbeatAudio = stopAudio(heartbeatAudio); }
+        function startSuspense() { suspenseAudio = stopAudio(suspenseAudio); if (audioReady) suspenseAudio = playSound('podium_suspense', 0.7, false); }
+        function playWinner() { stopHeartbeat(); if (audioReady) playSound('winner', 1.0, false); }
+        function playRevealSound() { stopHeartbeat(); tone(523,'sine',0,0.12,0.4); tone(659,'sine',0.13,0.12,0.4); tone(784,'sine',0.26,0.2,0.45); }
+
+        // Browsers only allow sound after the first click on the page.
+        document.addEventListener('click', () => {
+            if (audioReady) return;
+            audioReady = true;
+            getCtx().resume();
+            Object.keys(CFG.sounds).forEach(loadSound);   // decode everything up front
+            $('sound-hint').style.display = 'none';
+            if (view && view.phase === 'lobby') startLobbyMusic();
+            if (view && view.phase === 'answering') startQuestionMusic();
+        });
+
+        // ── CONFETTI ──────────────────────────────────────────────
+        function spawnConfetti(count) {
+            const colors = ['#f5c842','#7f77dd','#4caf7d','#e24b4a','#ffffff','#ff9800','#00bcd4','#ff69b4'];
+            for (let i = 0; i < count; i++) {
+                const c = el('div', 'confetti-piece');
+                c.style.left = Math.random() * 100 + 'vw';
+                c.style.background = colors[Math.floor(Math.random() * colors.length)];
+                const size = 6 + Math.random() * 12;
+                c.style.width = size + 'px';
+                c.style.height = size + 'px';
+                c.style.animationDuration = (1.5 + Math.random() * 2.5) + 's';
+                c.style.animationDelay = (Math.random() * 0.5) + 's';
+                document.body.appendChild(c);
+                setTimeout(() => c.remove(), 4500);
+            }
+        }
+
+        // ── HOST ACTIONS ──────────────────────────────────────────
+        function startGame() { socket.emit('start_game'); }
+        function selectQuiz(id) { socket.emit('select_quiz', { quiz_id: id }); }
+        function newGame() {
+            if (confirm('Close this game and create a new one with a new PIN? All players will be disconnected.')) {
+                location.href = '/host?new=1';
+            }
+        }
+        function backToLobby() {
+            if (confirm('Stop the game and go back to the lobby? Players stay, scores are reset.')) {
+                socket.emit('back_to_lobby');
+            }
+        }
+
+        // ── RENDER ────────────────────────────────────────────────
+        function render(v) {
+            const key = v.phase + ':' + v.q_number;
+            if (key !== lastKey) {
+                const prevPhase = lastKey ? lastKey.split(':')[0] : null;
+                lastKey = key;
+                enterPhase(v, prevPhase);
+            }
+            updateLive(v);
+            tick();
+        }
+
+        function enterPhase(v, prevPhase) {
+            if (v.phase !== 'podium') resetPodium();
+            if (v.phase !== 'lobby') lobbyAudio = stopAudio(lobbyAudio);
+            if (v.phase !== 'answering') questionAudio = stopAudio(questionAudio);
+
+            switch (v.phase) {
+                case 'lobby':
+                    show('lobby-screen');
+                    startLobbyMusic();
+                    break;
+                case 'countdown':
+                    lastCd = null;
+                    show('countdown-screen');
+                    break;
+                case 'intro':
+                case 'answering':
+                case 'results':
+                    enterQuestion(v, prevPhase);
+                    break;
+                case 'leaderboard':
+                    enterLeaderboard(v);
+                    break;
+                case 'final':
+                    show('final-screen');
+                    spawnConfetti(60);
+                    break;
+                case 'podium':
+                    showPodium(v.leaderboard);
+                    break;
+            }
+        }
+
+        function updateLive(v) {
+            if (v.phase === 'lobby') {
+                renderPlayers(v.players);
+                renderQuizPicker(v);
+            }
+            if (v.phase === 'answering') {
+                $('ans-count').textContent = v.answered;
+                $('ans-total').textContent = v.active;
+            }
+        }
+
+        // ── LOBBY ─────────────────────────────────────────────────
+        function renderPlayers(players) {
+            $('count').textContent = players.length;
+            $('start-btn').disabled = players.length === 0;
+            if (prevPlayerCount !== null && players.length > prevPlayerCount) playPlayerJoined();
+            prevPlayerCount = players.length;
+
+            const grid = $('players-grid');
+            grid.innerHTML = '';
+            if (!players.length) {
+                grid.appendChild(el('div', 'empty-msg', 'Waiting for players to join...'));
+                return;
+            }
+            players.forEach(p => {
+                const card = el('div', 'player-card' + (p.connected ? '' : ' offline') + (seenPlayers.has(p.pid) ? '' : ' pop'));
+                seenPlayers.add(p.pid);
+                const kick = el('button', 'kick', '✕');
+                kick.title = 'Remove player';
+                kick.onclick = () => { if (confirm('Remove ' + p.name + ' from the game?')) socket.emit('kick', { pid: p.pid }); };
+                card.appendChild(kick);
+                card.appendChild(el('div', 'p-avatar', AVATARS[(p.order - 1) % AVATARS.length]));
+                card.appendChild(el('p', 'p-name', p.name));
+                card.appendChild(el('span', 'p-status', p.connected ? '✅ Ready' : '📴 Offline'));
+                grid.appendChild(card);
+            });
+        }
+
+        function renderQuizPicker(v) {
+            const listKey = JSON.stringify(v.quizzes) + v.quiz_id;
+            if (listKey !== quizListKey) {
+                quizListKey = listKey;
+                const sel = $('quiz-select');
+                sel.innerHTML = '';
+                v.quizzes.forEach(q => {
+                    const o = el('option', '', q.title + ' (' + q.count + ' questions)');
+                    o.value = q.id;
+                    sel.appendChild(o);
+                });
+                sel.value = v.quiz_id || '';
+            }
+            $('quiz-errors').textContent = v.quiz_errors.length ? '⚠ ' + v.quiz_errors.join(' · ') : '';
+            if (!v.quizzes.length) $('start-btn').disabled = true;
+        }
+
+        // ── QUESTION ──────────────────────────────────────────────
+        function enterQuestion(v, prevPhase) {
+            show('question-screen');
+            const q = v.question;
+            const text = $('host-q-text');
+            $('q-badge').textContent = 'Question ' + v.q_number + ' of ' + v.q_total;
+            $('q-progress').style.width = (v.q_number / v.q_total * 100) + '%';
+            text.textContent = q.text;
+            const img = $('q-image');
+            if (q.image) { img.src = q.image; img.style.display = ''; } else { img.removeAttribute('src'); img.style.display = 'none'; }
+
+            const intro = v.phase === 'intro';
+            text.classList.toggle('big', intro);
+            if (intro) { text.classList.remove('enter'); text.offsetHeight; text.classList.add('enter'); }
+            $('read-wrap').style.display = intro ? '' : 'none';
+            $('host-options-grid').style.display = intro ? 'none' : '';
+            $('dist').style.display = v.phase === 'results' ? '' : 'none';
+            $('host-timer').style.visibility = intro ? 'hidden' : 'visible';
+            $('ans-badge').style.visibility = v.phase === 'answering' ? 'visible' : 'hidden';
+            $('skip-btn').style.display = v.phase === 'results' ? 'none' : '';
+            $('next-btn').style.display = v.phase === 'results' ? '' : 'none';
+            $('next-btn').textContent = v.is_last ? '🏁 Final Results' : '🏆 Leaderboard';
+            $('host-timer').classList.remove('urgent');
+            lastTickSec = null;
+
+            if (v.phase === 'intro') {
+                playQuestionStart();
+            } else if (v.phase === 'answering') {
+                renderHostOptions(q.options, null);
+                $('ans-count').textContent = '0';
+                startQuestionMusic();
+            } else if (v.phase === 'results') {
+                $('host-time').textContent = '0';
+                renderHostOptions(q.options, v.correct);
+                renderDistribution(v);
+                if (prevPhase === 'answering') {
+                    if (v.ended_early) playAllAnswered(); else playTimesUp();
+                }
+            }
+        }
+
+        function renderHostOptions(options, correct) {
+            const grid = $('host-options-grid');
+            grid.innerHTML = '';
+            options.forEach((text, i) => {
+                const d = el('div', 'host-option hopt-' + i);
+                if (correct !== null) d.classList.add(i === correct ? 'correct-mark' : 'dim');
+                d.appendChild(el('span', 'shape', SHAPES[i]));
+                d.appendChild(el('span', '', text));
+                if (correct === i) d.appendChild(el('span', 'check', '✓'));
+                grid.appendChild(d);
+            });
+        }
+
+        function renderDistribution(v) {
+            const box = $('dist');
+            box.innerHTML = '';
+            const max = Math.max(1, ...v.distribution);
+            const bars = [];
+            v.distribution.forEach((n, i) => {
+                const col = el('div', 'dist-col' + (i === v.correct ? '' : ' wrong'));
+                col.appendChild(el('div', 'dist-count', n));
+                const bar = el('div', 'dist-bar');
+                bar.style.background = COLORS[i];
+                col.appendChild(bar);
+                col.appendChild(el('div', 'dist-shape', SHAPES[i] + (i === v.correct ? ' ✓' : '')));
+                box.appendChild(col);
+                bars.push([bar, n]);
+            });
+            setTimeout(() => bars.forEach(([bar, n]) => { bar.style.height = Math.max(6, n / max * 140) + 'px'; }), 50);
+        }
+
+        // ── LEADERBOARD (rows slide from their old place to the new one) ──
+        function enterLeaderboard(v) {
+            show('leaderboard-screen');
+            $('lb-sub').textContent = 'After question ' + v.q_number + ' of ' + v.q_total;
+            const ROW = 78;
+            const top = v.leaderboard.slice(0, TOP_N);
+            const list = $('lb-list');
+            list.innerHTML = '';
+            list.style.height = (top.length * ROW) + 'px';
+            const medals = ['🥇', '🥈', '🥉'];
+            top.forEach((p, i) => {
+                const row = el('div', 'lb-row' + (i < 3 ? ' top' + (i + 1) : ''));
+                const from = p.prev_rank && p.prev_rank <= top.length ? p.prev_rank - 1 : top.length;
+                row.style.top = from * ROW + 'px';
+                if (from >= top.length) row.style.opacity = '0';
+                row.appendChild(el('span', 'lb-medal', medals[i] || String(i + 1)));
+                row.appendChild(el('span', 'lb-name', (p.eliminated ? '💀 ' : '') + p.name));
+                if (p.prev_rank && p.prev_rank > p.rank) row.appendChild(el('span', 'lb-move', '▲ ' + (p.prev_rank - p.rank)));
+                row.appendChild(el('span', 'lb-pts', p.score));
+                list.appendChild(row);
+                setTimeout(() => { row.style.top = i * ROW + 'px'; row.style.opacity = '1'; }, 700);
+            });
+            playRevealSound();
+        }
+
+        // ── PODIUM ────────────────────────────────────────────────
+        let podiumBoard = [];
+        let podiumQueue = [];
+        let podiumIndex = 0;
+        let podiumTimers = [];
+
+        function resetPodium() {
+            podiumTimers.forEach(clearTimeout);
+            podiumTimers = [];
+            $('heartbeat-overlay').classList.remove('active');
+            stopHeartbeat();
+            suspenseAudio = stopAudio(suspenseAudio);
+        }
+
+        function showPodium(board) {
+            resetPodium();
+            podiumBoard = board;
+            podiumQueue = board.slice(0, TOP_N).reverse();
+            podiumIndex = 0;
+            $('podium-intro').style.display = 'flex';
+            $('podium-reveal-list').style.display = 'none';
+            $('podium-reveal-list').innerHTML = '';
+            $('podium-next-btn').style.display = 'none';
+            $('podium-next-btn').disabled = false;
+            $('podium-end-btns').style.display = 'none';
+            show('podium-screen');
+            startSuspense();
+            podiumTimers.push(setTimeout(() => {
+                $('podium-intro').style.display = 'none';
+                $('podium-reveal-list').style.display = 'flex';
+                $('podium-next-btn').style.display = 'inline-block';
+                suspenseAudio = stopAudio(suspenseAudio);
+            }, 3000));
+        }
+
+        function revealNext() {
+            if (podiumIndex >= podiumQueue.length) return;
+            $('podium-next-btn').disabled = true;
+            const player = podiumQueue[podiumIndex];
+            const rank = player.rank;
+
+            if (rank <= 3) {
+                const msgs = { 1: '🥇 The Champion is...', 2: '🥈 2nd Place goes to...', 3: '🥉 3rd Place goes to...' };
+                $('hb-text').textContent = msgs[rank];
+                $('hb-subtext').textContent = rank === 1 ? '🎉 IT Club AAUP CodeBreaker' : '';
+                document.querySelector('.hb-icon').style.animationDuration = rank === 1 ? '0.25s' : rank === 2 ? '0.35s' : '0.45s';
+                $('heartbeat-overlay').classList.add('active');
+                startHeartbeat();
+                podiumTimers.push(setTimeout(() => {
+                    $('heartbeat-overlay').classList.remove('active');
+                    stopHeartbeat();
+                    doReveal(player, rank);
+                }, 3000));
+            } else {
+                doReveal(player, rank);
+            }
+        }
+
+        function doReveal(player, rank) {
+            const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+            const rankNames = ['1ST','2ND','3RD','4TH','5TH'];
+            const item = el('div', 'podium-reveal-item rank-' + rank);
+            item.appendChild(el('span', 'pr-medal', medals[rank - 1]));
+            item.appendChild(el('span', 'pr-rank', rankNames[rank - 1]));
+            item.appendChild(el('span', 'pr-name', (player.eliminated ? '💀 ' : '') + player.name));
+            item.appendChild(el('span', 'pr-score', player.score));
+            const list = $('podium-reveal-list');
+            list.insertBefore(item, list.firstChild);
+            setTimeout(() => item.classList.add('show'), 50);
+
+            if (rank === 1) { playWinner(); spawnConfetti(300); }
+            else if (rank === 2) { playRevealSound(); spawnConfetti(150); }
+            else if (rank === 3) { playRevealSound(); spawnConfetti(80); }
+            else { playRevealSound(); }
+
+            podiumIndex++;
+            $('podium-next-btn').disabled = false;
+            if (podiumIndex >= podiumQueue.length) {
+                $('podium-next-btn').style.display = 'none';
+                $('podium-end-btns').style.display = 'flex';
+            }
+        }
+
+        // ── TIMERS (always drawn from the server's clock) ─────────
+        function tick() {
+            const v = view;
+            if (!v) return;
+            if (v.phase === 'countdown') {
+                const n = Math.max(1, Math.ceil(left(v)));
+                if (n !== lastCd) {
+                    lastCd = n;
+                    const c = $('cd-number');
+                    c.textContent = n;
+                    c.style.animation = 'none';
+                    c.offsetHeight;
+                    c.style.animation = 'zoomIn 0.5s ease';
+                    playTick();
+                }
+            }
+            if (v.phase === 'intro' && v.duration) {
+                $('read-fill').style.width = (left(v) / v.duration * 100) + '%';
+            }
+            if (v.phase === 'answering') {
+                const t = Math.ceil(left(v));
+                $('host-time').textContent = t;
+                if (t <= 10) {
+                    $('host-timer').classList.add('urgent');
+                    if (t !== lastTickSec && t > 0) playTick();
+                }
+                lastTickSec = t;
+            }
+        }
+        setInterval(tick, 200);
+    </script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT CodeBreaker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: #0a0f1e;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: #0a0f1e;
+            border: 0.5px solid #533ab7;
+            border-radius: 16px;
+            padding: 40px 32px;
+            text-align: center;
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo { width: 160px; }
+        .logo img { width: 100%; height: auto; }
+
+        .divider { display: flex; align-items: center; gap: 10px; }
+        .divider-line { width: 36px; height: 1px; background: #7f77dd; }
+        .divider p { font-size: 11px; color: #7f77dd; letter-spacing: 3px; text-transform: uppercase; }
+
+        h1 { font-size: 32px; font-weight: 500; color: #eeedfe; letter-spacing: -1px; }
+        h1 span { color: #7f77dd; }
+        .subtitle { font-size: 13px; color: #534ab7; margin-top: 6px; }
+
+        .form-group { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+
+        input {
+            width: 100%;
+            background: #13183a;
+            border: 0.5px solid #534ab7;
+            color: #eeedfe;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+        }
+        input::placeholder { color: #3c3489; }
+        input:focus { border-color: #7f77dd; }
+
+        .pin-input { text-align: center; font-size: 24px; font-weight: 600; letter-spacing: 8px; padding: 14px; }
+        .pin-input::placeholder { font-size: 16px; letter-spacing: 3px; font-weight: 400; }
+
+        button, .rejoin {
+            width: 100%;
+            background: #534ab7;
+            border: none;
+            color: #eeedfe;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: background 0.2s;
+            font-family: inherit;
+        }
+        button:hover { background: #7f77dd; }
+
+        .rejoin {
+            display: block;
+            text-decoration: none;
+            background: transparent;
+            border: 0.5px solid #534ab7;
+            color: #7f77dd;
+        }
+        .rejoin:hover { background: #13183a; }
+
+        .error {
+            width: 100%;
+            background: #2b0d0d;
+            border: 0.5px solid #e24b4a;
+            color: #ff8a89;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="IT Club Logo">
+        </div>
+
+        <div class="divider">
+            <div class="divider-line"></div>
+            <p>IT Club AAUP</p>
+            <div class="divider-line"></div>
+        </div>
+
+        <div>
+            <h1>CODE<span>BREAKER</span></h1>
+            <p class="subtitle">Solve. Decode. Win.</p>
+        </div>
+
+        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+        {% if rejoin %}
+        <a class="rejoin" href="{{ url_for('play') }}">↩ Back to the game as {{ rejoin }}</a>
+        {% endif %}
+
+        <form class="form-group" action="{{ url_for('join') }}" method="POST">
+            <input class="pin-input" type="text" name="pin" placeholder="Game PIN" value="{{ pin }}"
+                   inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" required>
+            <input type="text" name="username" placeholder="Enter your name..." value="{{ name }}"
+                   maxlength="16" autocomplete="off" required>
+            <button type="submit">JOIN GAME</button>
+        </form>
+    </div>
+</body>
+</html>

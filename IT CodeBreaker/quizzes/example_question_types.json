@@ -1,0 +1,23 @@
+{
+  "title": "Example: question types",
+  "time": 20,
+  "questions": [
+    {
+      "type": "truefalse",
+      "question": "Python is a compiled language like C.",
+      "correct": false
+    },
+    {
+      "question": "Which port does HTTPS use by default?",
+      "options": ["80", "443", "8080"],
+      "correct": 1,
+      "time": 15
+    },
+    {
+      "type": "truefalse",
+      "question": "1 KB is exactly 1000 bytes in binary units.",
+      "correct": false,
+      "time": 10
+    }
+  ]
+}
