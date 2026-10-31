@@ -579,6 +579,7 @@
             $('q-badge').textContent = 'Question ' + v.q_number + ' of ' + v.q_total;
             $('q-progress').style.width = (v.q_number / v.q_total * 100) + '%';
             text.textContent = q.text;
+            text.dir = 'auto';
             const img = $('q-image');
             if (q.image) { img.src = q.image; img.style.display = ''; } else { img.removeAttribute('src'); img.style.display = 'none'; }
 
@@ -619,7 +620,9 @@
                 const d = el('div', 'host-option hopt-' + i);
                 if (correct !== null) d.classList.add(i === correct ? 'correct-mark' : 'dim');
                 d.appendChild(el('span', 'shape', SHAPES[i]));
-                d.appendChild(el('span', '', text));
+                const t = el('span', '', text);
+                t.dir = 'auto';
+                d.appendChild(t);
                 if (correct === i) d.appendChild(el('span', 'check', '✓'));
                 grid.appendChild(d);
             });
