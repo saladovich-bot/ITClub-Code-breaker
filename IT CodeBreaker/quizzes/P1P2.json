@@ -1,0 +1,81 @@
+{
+  "title": "Honoring problem solving 1&2",
+  "time": 30,
+  "questions": [
+    {
+      "question": "اي جملة هي اختصار ل USB؟",
+      "options": ["United System Base", "Universal Series Bus", "Universal Serial Bus", "User Sub Board"],
+      "correct": 2
+    },
+    {
+      "question": "ماذا يرمز الحرف S في HTTPS؟",
+      "options": ["Speed", "Server", "Secure", "System"],
+      "correct": 2
+    },
+    {
+      "question": "What does GPU stand for?",
+      "options": ["Graphics Processing Unit", "General Processing Unit", "Graphical Program Utility", "Global Power Unit"],
+      "correct": 0
+    },
+    {
+      "question": "إذا كانت كلمة CAT تتحول إلى DBU بتحريك كل حرف خطوة للأمام في الأبجدية الإنجليزية، فكيف تتحول DOG؟",
+      "options": ["CNG", "FQI", "EPH", "EOG"],
+      "correct": 2
+    },
+    {
+      "question": "اي شركة طورت لغة سويفت (Swift)؟",
+      "options": ["Google", "Apple", "Windows", "LG"],
+      "correct": 1
+    },
+    {
+      "question": "ماذا يعني HTTP Error 404؟",
+      "options": ["الإنترنت بطيء", "الصفحة غير موجودة", "البطارية فارغة", "كلمة المرور خاطئة"],
+      "correct": 1
+    },
+    {
+      "question": "ما الاختصار السابق للجامعة العربية الأمريكية؟",
+      "options": ["AAUR", "AAUL", "AAUJ", "AAUI"],
+      "correct": 2
+    },
+    {
+      "question": "هل تعلم ان اول مبرمج فالعالم هي امرأة! ما اسمها؟",
+      "options": ["Mark Zuckerberg", "Steve Jobs", "Elon Musk", "Ada Lovelace"],
+      "correct": 3
+    },
+    {
+      "question": "أي من التالي ليس من وحدات قياس سعة التخزين؟",
+      "options": ["GB", "TB", "MB", "GHz"],
+      "correct": 3
+    },
+    {
+      "question": "ما المقصود بـ QR Code؟",
+      "options": ["Quality Recognition", "Quick Reading", "Quantum Recognition", "Quick Response"],
+      "correct": 3
+    },
+    {
+      "question": "ما المصطلح التكنولوجي الذي يعبر عنه الايموجي 🐧💻؟",
+      "options": ["Windows", "GitHub", "Google", "Linux"],
+      "correct": 3
+    },
+    {
+      "question": "ما الوظيفة الأساسية لعنوان IP؟",
+      "options": ["زيادة سرعة الإنترنت", "تعريف جهاز أو واجهة على شبكة تستخدم بروتوكول الإنترنت", "حماية الشاشة", "تخزين الصور"],
+      "correct": 1
+    },
+    {
+      "question": "هل يستطيع الذكاء الاصطناعي إعطاء معلومات خاطئة بثقة؟",
+      "options": ["لا، أبداً", "نعم", "فقط بدون إنترنت", "فقط في الرياضيات"],
+      "correct": 1
+    },
+    {
+      "question": "ماذا يحدث إذا وضعت الهاتف على Airplane Mode؟",
+      "options": ["ينطفئ الهاتف", "تُعطَّل الاتصالات اللاسلكية الأساسية، ويمكن إعادة تفعيل بعضها يدوياً", "تُحذف التطبيقات", "تصبح البطارية 100%"],
+      "correct": 1
+    },
+    {
+      "question": "ما معنى CAPTCHA الذي يظهر في المواقع؟",
+      "options": ["برنامج لتسريع الإنترنت", "نوع من كلمات المرور", "اختبار يساعد على التمييز بين البشر والبرامج الآلية", "لغة برمجة"],
+      "correct": 2
+    }
+  ]
+}
