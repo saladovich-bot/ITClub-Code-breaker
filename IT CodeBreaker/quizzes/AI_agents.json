@@ -1,0 +1,136 @@
+{
+  "title": "AI Agents & Agentic AI",
+  "time": 35,
+  "questions": [
+    {
+      "question": "الـ Generative AI (مثل ChatGPT) يعمل بعد أن تطلب منه، ثم يتوقف عند هذا الحد.",
+      "options": [
+        "صح",
+        "خطأ"
+      ],
+      "correct": 0,
+      "time": 25
+    },
+    {
+      "question": "في مثال اليوتيوبر مع الـ Generative AI (النص، الصورة المصغرة، الموسيقى)، من الذي يراجع كل خطوة؟",
+      "options": [
+        "الـ Agent",
+        "الإنسان",
+        "الـ LLM",
+        "المشاهدون"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "منصة Aqlama للبيانات (data.aqlama.com) تجمع ماذا؟",
+      "options": [
+        "أسعار الأسهم",
+        "صور طبية للتشخيص",
+        "ملفات PDF للطلاب",
+        "بيانات صوتية تُدرَّب عليها النماذج"
+      ],
+      "correct": 3
+    },
+    {
+      "question": "المعادلة التي شرحناها للـ Agent: LLM Model + Tools + ؟ = Agent. ماذا ينقص المعادلة؟",
+      "options": [
+        "Dataset",
+        "Cloud",
+        "Loop",
+        "GPU"
+      ],
+      "correct": 2
+    },
+    {
+      "question": "في مشروع Teoria Runner، كم عدد المستويات (levels)؟",
+      "options": [
+        "10",
+        "25",
+        "81",
+        "760"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "لو سألت الـ Agent عن ملف خاص بك، وهذا الملف ليس داخل الـ Context Window، ماذا يحدث؟",
+      "options": [
+        "لا يعرف عنه شيئاً",
+        "يقرؤه تلقائياً من جهازك",
+        "يتذكره من محادثة الأسبوع الماضي",
+        "يراه من خلال الـ Embeddings"
+      ],
+      "correct": 0
+    },
+    {
+      "question": "جملة Agentic AI is awesome! كم Token رآها النموذج؟",
+      "options": [
+        "4",
+        "7",
+        "10",
+        "12"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "أي مما يلي يُعتبر Skill وليس Tool؟",
+      "options": [
+        "Terminal",
+        "Browser",
+        "APIs",
+        "تعليمات جاهزة لعمل code-review"
+      ],
+      "correct": 3
+    },
+    {
+      "question": "في مثال القميص (سعره 20$ بعد خصم 20%)، ما السعر الأصلي؟",
+      "options": [
+        "$16",
+        "$24",
+        "$25",
+        "$40"
+      ],
+      "correct": 2,
+      "time": 40
+    },
+    {
+      "question": "الـ Reasoning models التي شرحناها، كيف أصبحت تفكّر؟",
+      "options": [
+        "نموذج مختلف تماماً لا علاقة له بالـ LLM",
+        "LLM عادي دُرّب على أمثلة تفكير خطوة بخطوة",
+        "نموذج يعمل بدون أي بيانات تدريب",
+        "LLM يعمل على جهاز أسرع فقط"
+      ],
+      "correct": 1
+    },
+    {
+      "question": "في الـ Orchestration، من يوزّع المهام على Research و Code و Test؟",
+      "options": [
+        "الـ Main agent",
+        "الـ Sub-agent الخاص بالـ Test",
+        "الـ Context Window",
+        "الإنسان دائماً"
+      ],
+      "correct": 0
+    },
+    {
+      "question": "كيف يساعد الـ RAG في تقليل الـ Hallucination؟",
+      "options": [
+        "نطلب من النموذج أن يكون أذكى",
+        "نمسح الـ System Prompt",
+        "نزيد عدد الـ Tokens فقط",
+        "نضع المعلومة الصحيحة داخل الـ Context Window فيتوقف عن التخمين"
+      ],
+      "correct": 3
+    },
+    {
+      "question": "تريد من الـ Agent أن يجرّب أوامر قد تحذف ملفات، دون أي خطر على ملفاتك الحقيقية. أي Guardrail تستخدم؟",
+      "options": [
+        "Human approval",
+        "Sandbox",
+        "Limits",
+        "Verify"
+      ],
+      "correct": 1
+    }
+  ]
+}
