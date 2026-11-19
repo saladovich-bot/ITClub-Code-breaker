@@ -1,6 +1,6 @@
 {
   "title": "AI Agents & Agentic AI",
-  "time": 35,
+  "time": 30,
   "questions": [
     {
       "question": "الـ Generative AI (مثل ChatGPT) يعمل بعد أن تطلب منه، ثم يتوقف عند هذا الحد.",
@@ -9,7 +9,7 @@
         "خطأ"
       ],
       "correct": 0,
-      "time": 25
+      "time": 20
     },
     {
       "question": "في مثال اليوتيوبر مع الـ Generative AI (النص، الصورة المصغرة، الموسيقى)، من الذي يراجع كل خطوة؟",
@@ -32,7 +32,7 @@
       "correct": 3
     },
     {
-      "question": "المعادلة التي شرحناها للـ Agent: LLM Model + Tools + ؟ = Agent. ماذا ينقص المعادلة؟",
+      "question": "المعادلة التي شرحناها للـ Agent هي ⁦LLM Model + Tools + ? = Agent⁩ فماذا ينقص المعادلة؟",
       "options": [
         "Dataset",
         "Cloud",
@@ -62,7 +62,7 @@
       "correct": 0
     },
     {
-      "question": "جملة Agentic AI is awesome! كم Token رآها النموذج؟",
+      "question": "جملة ⁦Agentic AI is awesome!⁩ كم Token رآها النموذج؟",
       "options": [
         "4",
         "7",
